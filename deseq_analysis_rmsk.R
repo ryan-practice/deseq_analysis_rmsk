@@ -47,7 +47,7 @@ cts <- do.call(
 
 rownames(cts) <- gene_ids
 colnames(cts) <- sampleNames
-
+ #
 #########################################Create DESeq2 colData
 possible_conditions <- gsub("^M7L76V_[0-9]{1,2}_sample_[0-9]{1,2}_", "", sampleNames)
 possible_conditions <- gsub("_rep[0-9]{1}_RAWSEQ", "", possible_conditions)
