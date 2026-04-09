@@ -1,0 +1,520 @@
+---
+title: "decipher_loughran_scrna"
+output: html_document
+date: "2026-03-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  engine.path = list(bash = "/bin/bash")
+)
+
+knitr::opts_knit$set(
+  root.dir = "/standard/CookLab/Ryan/plasmidsaurus_de"
+)
+```
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(functions)
+library(DESeq2)
+library(vsn)
+library(pheatmap)
+library(openxlsx)
+library(Biostrings)
+library(stringdist)
+library(Seurat)
+
+loughran_seurat <- readRDS("20260312_loughran_scrna.rds")
+
+
+```
+
+First, I just checked the file structure. It's somewhat long but worth scrolling through initially
+```{bash, echo = TRUE}
+source /etc/profile.d/modules.sh
+module load tree
+tree /standard/CookLab/loughran_scrna/fastq
+```
+
+It looks like jeff sorted samples and/or libraries into directories. I make sure each directory has only one prefix, which would inidicate to me they are one demultiplexed sample and/or library across lanes. As of now I am unsure the difference between novaseq1 directory and novaseq2 directory but I check them both. The flow cell ID seems to differ so I suppose 2 different runs?
+```{bash}
+for d in /standard/CookLab/loughran_scrna/fastq/novaseq1/outs/fastq_path/H5CFNDSXY/*_GEX; do
+  echo "== $d =="
+  ls "$d" | sed -E 's/_S[0-9]+_L00[0-9]_(I1|R1|R2)_001.fastq.gz$//' | sort | uniq -c
+done
+for d in /standard/CookLab/loughran_scrna/fastq/novaseq2/outs/fastq_path/H5MVCDSXY/*_GEX; do
+  echo "== $d =="
+  ls "$d" | sed -E 's/_S[0-9]+_L00[0-9]_(I1|R1|R2)_001.fastq.gz$//' | sort | uniq -c
+done
+```
+I see jeff2 in both novaseq1 and novaseq2 but how can I check if they are the same sample? Also, there seem to be more samples in the Reports directory
+
+```{bash}
+(echo "novaseq1"; ls /standard/CookLab/loughran_scrna/fastq/novaseq1/Reports/html/H5CFNDSXY/UVA_LoughranLab/) | paste - <(echo "novaseq2"; ls /standard/CookLab/loughran_scrna/fastq/novaseq2/Reports/html/H5MVCDSXY/UVA_LoughranLab/) | column -t
+
+```
+
+Never mind, I think these are just reports, not fastq files. Maybe some of this are other projects?
+```{bash}
+source /etc/profile.d/modules.sh
+module load tree
+tree /standard/CookLab/loughran_scrna/fastq/novaseq1/Reports/html/H5CFNDSXY/UVA_LoughranLab/jeff2_GEX_S13
+```
+
+Back to the novaseq1 and novaseq2 fastq files. I think these are just two runs of the same samples 1-8
+```{bash}
+(echo "novaseq1"; ls /standard/CookLab/loughran_scrna/fastq/novaseq1/outs/fastq_path/H5CFNDSXY/) | paste - <(echo "novaseq2"; ls /standard/CookLab/loughran_scrna/fastq/novaseq2/outs/fastq_path/H5MVCDSXY/) | column -t
+
+```
+
+
+
+
+Next, I think I should check for number of unique values in the metadata columns. Ideally something matches 8. Or perhaps 7 since sample 1 seems to be missing GEX
+```{r}
+values <-  data.frame(
+    column = names(loughran_seurat@meta.data),
+    unique_values = sapply(loughran_seurat@meta.data, function(col) length(unique(col))),
+    row.names = NULL
+  )
+values[values$unique_values == 7 | values$unique_values == 8, ]
+unique(loughran_seurat$batch)
+unique(loughran_seurat$chain_pairing)
+```
+
+
+Let's look at barcodes
+```{r}
+loughran_metadata <- loughran_seurat@meta.data
+loughran_metadata <- cbind(functions::split_column(data.frame("barcodes" = rownames(loughran_metadata)), "barcodes", "-"), loughran_metadata)
+unique(loughran_metadata$barcodes_2)
+unique(loughran_metadata$barcodes_3)
+```
+
+Bingo! 7 samples, probably corresponding to jeff# that have GEX. I don't know what/who xing is
+```{r}
+sample_from_barcode <- str_extract(colnames(loughran_seurat), "(?<=-)[1-7](?=-xing5p$)")
+names(sample_from_barcode) <- colnames(loughran_seurat)
+
+loughran_seurat <- AddMetaData(loughran_seurat,
+                               sample_from_barcode,
+                               col.name = "sample_from_barcode")
+loughran_metadata <- loughran_seurat@meta.data
+seur_obj_list <- SplitObject(loughran_seurat, split.by = "sample_from_barcode")
+
+seur_one <- seur_obj_list[[1]]
+seur_two <- seur_obj_list[[2]]
+seur_three <- seur_obj_list[[3]]
+seur_four <- seur_obj_list[[4]]
+seur_five <- seur_obj_list[[5]]
+seur_six <- seur_obj_list[[6]]
+seur_seven <- seur_obj_list[[7]]
+
+meta_one <- seur_one@meta.data
+unique(meta_one$group)
+meta_two <- seur_two@meta.data
+unique(meta_two$group)
+meta_three <- seur_three@meta.data
+unique(meta_three$group)
+meta_four <- seur_four@meta.data
+unique(meta_four$group)
+meta_five <- seur_five@meta.data
+unique(meta_five$group)
+meta_six <- seur_six@meta.data
+unique(meta_six$group)
+meta_seven <- seur_seven@meta.data
+unique(meta_seven$group)
+
+unique(loughran_metadata$group)
+```
+
+
+Okay I think the experimental structure is something like this
+
+7 biological samples (jeff1–jeff7)
+   ×
+3 library types (GEX, FB, TCR)
+   ×
+4 sample indexes each
+   ×
+2 NovaSeq runs
+   ×
+4 lanes per run
+
+```{bash}
+#pwd
+#cd /standard/CookLab/loughran_scrna/fastq/novaseq1/outs/fastq_path/H5CFNDSXY/jeff2_GEX
+#pwd
+#ls
+#zcat *_R1_*.fastq.gz | sed -n '2~4p' | cut -c1-16 > cell_barcodes.txt
+#zcat *_I1_*.fastq.gz | sed -n '2~4p' > sample_indexes.txt
+#paste sample_indexes.txt cell_barcodes.txt > index_cell_pairs.txt
+```
+
+Based on the data below, I believe it may be possible to demultiplex the 4 pooled samples by their i5 indices. Each lane of a given library has only 4 i5 barcodes and they are the same 4 across lanes. Additionally, novseq1 appear to be the same as novaseq2. Next I should just align the fastq within each jeff# directory and worry about trying to demultiplex after I see if there are hits or not
+```{r}
+pair_barcode_indices <- fread("/standard/CookLab/loughran_scrna/fastq/novaseq1/outs/fastq_path/H5CFNDSXY/jeff2_GEX/index_cell_pairs.txt", header = FALSE)
+
+novaseq1_lane_barcode <- fread("/standard/CookLab/loughran_scrna/fastq/novaseq1_laneBarcode.tsv", sep = "\t", header = TRUE)
+novaseq1_lane_barcode <- split_column(novaseq1_lane_barcode, "sample", "_")
+novaseq1_lane_barcode$dir <- paste0(novaseq1_lane_barcode$sample_1, "_", novaseq1_lane_barcode$sample_2)
+jeff2_GEX <- dplyr::filter(novaseq1_lane_barcode, `dir` == "jeff2_GEX")
+jeff3_GEX <- dplyr::filter(novaseq1_lane_barcode, `dir` == "jeff3_GEX")
+View(cbind(jeff2_GEX$barcode_sequence, jeff3_GEX$barcode_sequence))
+
+novaseq2_lane_barcode <- fread("/standard/CookLab/loughran_scrna/fastq/novaseq2_laneBarcode.tsv", sep = "\t", header = TRUE)
+novaseq2_lane_barcode <- split_column(novaseq2_lane_barcode, "sample", "_")
+novaseq2_lane_barcode$dir <- paste0(novaseq2_lane_barcode$sample_1, "_", novaseq2_lane_barcode$sample_2)
+jeff2_GEX_2 <- dplyr::filter(novaseq2_lane_barcode, `dir` == "jeff2_GEX")
+jeff3_GEX_2 <- dplyr::filter(novaseq2_lane_barcode, `dir` == "jeff3_GEX")
+View(cbind(jeff2_GEX_2$barcode_sequence, jeff3_GEX_2$barcode_sequence))
+
+View(cbind(jeff2_GEX$barcode_sequence, jeff2_GEX_2$barcode_sequence, jeff3_GEX$barcode_sequence, jeff3_GEX_2$barcode_sequence))
+cbind(jeff2_GEX$barcode_sequence, jeff2_GEX_2$barcode_sequence, jeff3_GEX$barcode_sequence, jeff3_GEX_2$barcode_sequence)
+```
+
+
+As of now, I am not sure which seurat barcode -# relates to which jeff# fastq. For now I will assume -1 is jeff2 as both suffixes are the lowest number
+
+Regardless, it doesn't seem like the i5 indices are specific to any particular group in the seurat metadata. For T_2074_untreated_PBMC barcodes, it looks like there are all 4 i5 barcodes
+
+This chunk does confirm jeff2 = -1, jeff3 = -2, etc
+
+```{r}
+colnames(pair_barcode_indices) #first time I read in this enormous file I didn't hae header = FALSE so this will need to change when the time comes
+T_2074_one <- gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_2074_untreated_PBMC"),]))
+test_one <- pair_barcode_indices[which(pair_barcode_indices$V2 %in% T_2074_one == TRUE),]
+
+nrow(test)/nrow(pair_barcode_indices)
+```
+
+```{r}
+check_10x_barcodes_in_fastq <- function(fastq_file, barcodes, barcode_length = 16) {
+  # Basic checks
+  if (!file.exists(fastq_file)) {
+    stop("FASTQ file does not exist: ", fastq_file)
+  }
+  
+  if (length(barcodes) == 0) {
+    stop("You must provide at least one barcode.")
+  }
+  
+  # Clean barcode list
+  barcodes <- unique(toupper(trimws(barcodes)))
+  barcodes <- barcodes[nzchar(barcodes)]
+  
+  if (length(barcodes) == 0) {
+    stop("No valid barcodes remain after cleaning.")
+  }
+  
+  # Open FASTQ (supports .gz or plain text)
+  con <- if (grepl("\\.gz$", fastq_file, ignore.case = TRUE)) {
+    gzfile(fastq_file, open = "rt")
+  } else {
+    file(fastq_file, open = "r")
+  }
+  
+  on.exit(close(con))
+  
+  found <- setNames(rep(FALSE, length(barcodes)), barcodes)
+  
+  repeat {
+    lines <- readLines(con, n = 400000)
+    if (length(lines) == 0) break
+    
+    # FASTQ sequence lines are every 2nd line of each 4-line record
+    seq_lines <- lines[seq(2, length(lines), by = 4)]
+    
+    # Extract first barcode_length bases
+    observed_barcodes <- substr(toupper(seq_lines), 1, barcode_length)
+    
+    # Mark matches
+    matched <- intersect(barcodes, observed_barcodes)
+    if (length(matched) > 0) {
+      found[matched] <- TRUE
+    }
+    
+    # Stop early if all barcodes have already been found
+    if (all(found)) break
+  }
+  
+  n_found <- sum(found)
+  n_total <- length(barcodes)
+  percent_found <- 100 * n_found / n_total
+  
+  list(
+    n_barcodes_input = n_total,
+    n_barcodes_found = n_found,
+    percent_found = percent_found,
+    found_barcodes = names(found)[found],
+    missing_barcodes = names(found)[!found]
+  )
+}
+T_2074_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_2074_untreated_PBMC"),])), "jeff2", "S4",
+                   "T_2074_untreated_PBMC")
+T_1666_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_1666_untreated_PBMC"),])), "jeff2", "S4",
+                   "T_1666_untreated_PBMC")
+T_1613_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_1613_untreated_PBMC"),])), "jeff2", "S4",
+                   "T_1613_untreated_PBMC")
+NL_0047_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "NL_0047_untreated_PBMC"),])), "jeff2", "S4",
+                    "NL_0047_untreated_PBMC")
+
+T_1352_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "T_1352_untreated_PBMC"),])), "jeff3", "S5",
+                   "T_1352_untreated_PBMC")
+T_1406_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "T_1406_untreated_PBMC"),])), "jeff3", "S5",
+                   "T_1406_untreated_PBMC")
+T_1930_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "T_1930_untreated_PBMC"),])), "jeff3", "S5",
+                   "T_1930_untreated_PBMC")
+NL_2539_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "NL_2539_untreated_PBMC"),])), "jeff3", "S5",
+                    "NL_2539_untreated_PBMC")
+
+T_1684_three <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "T_1684_untreated_PBMC"),])), "jeff4", "S6",
+                     "T_1684_untreated_PBMC")
+T_1875_three <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "T_1875_untreated_PBMC"),])), "jeff4", "S6",
+                     "T_1875_untreated_PBMC")
+T_1983_three <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "T_1983_untreated_PBMC"),])), "jeff4", "S6",
+                     "T_1983_untreated_PBMC")
+NL_2548_three<-list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "NL_2548_untreated_PBMC"),])), "jeff4", "S6",
+                    "NL_2548_untreated_PBMC")
+
+NK_2012_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "NK_2012_untreated_PBMC"),])), "jeff5", "S15",
+                     "NK_2012_untreated_PBMC")
+NL_0049_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "NL_0049_untreated_PBMC"),])), "jeff5", "S15",
+                     "NL_0049_untreated_PBMC")
+T_1983_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "T_1983_untreated_SMC"),])), "jeff5", "S15",
+                    "T_1983_untreated_SMC")
+T_1406_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "T_1406_relapsed_PBMC"),])), "jeff5", "S15",
+                    "T_1406_relapsed_PBMC")
+
+NK_2199_five <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$group == "NK_2199_untreated_PBMC"),])), "jeff6", "S16",
+                     "NK_2199_untreated_PBMC")
+NK_2112_five <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$group == "NK_2112_untreated_PBMC"),])), "jeff6", "S16",
+                     "NK_2112_untreated_PBMC")
+T_1406_five<-list(gsub("-5-xing5p","",row.names(meta_five[which(meta_five$group =="T_1406_cyclophosphamide_PBMC"),])), "jeff6", "S16",
+                  "T_1406_cyclophosphamide_PBMC")
+T_1983_five <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$group == "T_1983_relapsed_MAMC"),])), "jeff6", "S16",
+                    "T_1983_relapsed_MAMC")
+
+T_1825_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "T_1825_untreated_PBMC"),])), "jeff7", "S17",
+                   "T_1825_untreated_PBMC")
+T_1983_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "T_1983_relapsed_PBMC"),])), "jeff7", "S17",
+                   "T_1983_relapsed_PBMC")
+NK_1768_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "NK_1768_untreated_PBMC"),])), "jeff7", "S17",
+                    "NK_1768_untreated_PBMC")
+NK_1820_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "NK_1820_untreated_PBMC"),])), "jeff7", "S17",
+                    "NK_1820_untreated_PBMC")
+
+NK_1791_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "NK_1791_untreated_PBMC"),])), "jeff8", "S18", "NK_1791_untreated_PBMC")
+T_1893_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "T_1893_untreated_PBMC"),])), "jeff8", "S18", "T_1893_untreated_PBMC")
+T_1983_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "T_1983_methotrexate_PBMC"),])), "jeff8", "S18", "T_1983_methotrexate_PBMC")
+T_1847_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "T_1847_untreated_PBMC" ),])), "jeff8", "S18","T_1847_untreated_PBMC")
+
+
+jeff2_t_2074 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_2074_one[[1]], 16)
+jeff2_t_1666 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_1666_one[[1]], 16)
+jeff2_t_2074_ns2 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_2074_one[[1]], 16)
+jeff2_t_1666_ns2 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_1666_one[[1]], 16)
+
+jeff3_t_1352 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff3_GEX_S5_L001_R1_001.fastq.gz", T_1352_two[[1]], 16)
+
+jeff4_t_1684 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff4_GEX_S6_L001_R1_001.fastq.gz", T_1684_three[[1]], 16)
+```
+
+```{r}
+subset_10x_fastq_by_barcodes <- function(
+  r1_fastq_gz,
+  r2_fastq_gz,
+  barcodes,
+  out_r1_gz,
+  out_r2_gz,
+  barcode_length = 16,
+  chunk_size = 100000
+) {
+  # Basic checks
+  if (!file.exists(r1_fastq_gz)) stop("R1 file does not exist: ", r1_fastq_gz)
+  if (!file.exists(r2_fastq_gz)) stop("R2 file does not exist: ", r2_fastq_gz)
+  if (length(barcodes) == 0) stop("You must provide at least one barcode.")
+  if (chunk_size <= 0) stop("chunk_size must be > 0")
+  
+  # Clean barcode list
+  barcodes <- unique(toupper(trimws(barcodes)))
+  barcodes <- barcodes[nzchar(barcodes)]
+  if (length(barcodes) == 0) stop("No valid barcodes remain after cleaning.")
+  
+  # Open connections
+  r1_con <- gzfile(r1_fastq_gz, open = "rt")
+  r2_con <- gzfile(r2_fastq_gz, open = "rt")
+  out1_con <- gzfile(out_r1_gz, open = "wt")
+  out2_con <- gzfile(out_r2_gz, open = "wt")
+  
+  on.exit({
+    close(r1_con)
+    close(r2_con)
+    close(out1_con)
+    close(out2_con)
+  }, add = TRUE)
+  
+  total_reads <- 0L
+  kept_reads <- 0L
+  
+  repeat {
+    # Read chunks as FASTQ records (4 lines per read)
+    r1_lines <- readLines(r1_con, n = chunk_size * 4)
+    r2_lines <- readLines(r2_con, n = chunk_size * 4)
+    
+    if (length(r1_lines) == 0 && length(r2_lines) == 0) break
+    
+    if (length(r1_lines) != length(r2_lines)) {
+      stop("R1 and R2 differ in number of lines within a chunk. Files may be unsynchronized.")
+    }
+    
+    if (length(r1_lines) %% 4 != 0) {
+      stop("R1 chunk does not contain complete FASTQ records.")
+    }
+    
+    if (length(r2_lines) %% 4 != 0) {
+      stop("R2 chunk does not contain complete FASTQ records.")
+    }
+    
+    n_reads <- length(r1_lines) / 4L
+    total_reads <- total_reads + n_reads
+    
+    # Sequence lines are line 2 of each 4-line FASTQ record
+    r1_seq_idx <- seq(2, length(r1_lines), by = 4)
+    r1_seqs <- r1_lines[r1_seq_idx]
+    
+    # Extract putative 10x barcode from start of R1 sequence
+    observed_barcodes <- substr(toupper(r1_seqs), 1, barcode_length)
+    keep <- observed_barcodes %in% barcodes
+    
+    if (any(keep)) {
+      kept_reads <- kept_reads + sum(keep)
+      
+      # Expand logical vector from reads to FASTQ lines
+      keep_lines <- rep(keep, each = 4)
+      
+      writeLines(r1_lines[keep_lines], out1_con, sep = "\n")
+      writeLines(r2_lines[keep_lines], out2_con, sep = "\n")
+    }
+  }
+  
+  list(
+    total_reads_processed = total_reads,
+    reads_kept = kept_reads,
+    percent_reads_kept = 100 * kept_reads / total_reads,
+    output_r1 = out_r1_gz,
+    output_r2 = out_r2_gz
+  )
+}
+
+barcode_lists <- ls(envir = .GlobalEnv)[sapply(ls(envir = .GlobalEnv), function(x) inherits(get(x, envir = .GlobalEnv), "list"))]
+barcode_lists <- barcode_lists[-which(barcode_lists == "seur_obj_list")]
+if(length(barcode_lists) != 28){
+  stop()
+}
+for(i_barcode in barcode_lists){
+  temp_obj <- get(i_barcode)
+  temp_barcodes <- temp_obj[[1]]
+  temp_dir <- temp_obj[[2]]
+  temp_s <- temp_obj[[3]]
+  for(i_lane in c("L001", "L002", "L003", "L004")){
+    temp_ns1_r1 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.",
+                        temp_dir,
+                        "_GEX_",
+                        temp_s,
+                        "_",
+                        i_lane,
+                        "_R1_001.fastq.gz")
+    temp_ns1_r2 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq1.subset.",
+                          temp_dir,
+                          "_GEX_",
+                          temp_s,
+                          "_",
+                          i_lane,
+                          "_R2_001.fastq.gz")
+    temp_ns1_r1_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
+                        temp_obj[[4]],
+                        "_novaseq1.subset.",
+                        temp_dir,
+                        "_GEX_",
+                        temp_s,
+                        "_",
+                        i_lane,
+                        "_R1_001.fastq.gz")
+     temp_ns1_r2_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
+                        temp_obj[[4]],
+                        "_novaseq1.subset.",
+                        temp_dir,
+                        "_GEX_",
+                        temp_s,
+                        "_",
+                        i_lane,
+                        "_R2_001.fastq.gz")
+     subset_10x_fastq_by_barcodes(temp_ns1_r1,
+                                  temp_ns1_r2,
+                                  temp_barcodes,
+                                  temp_ns1_r1_out,
+                                  temp_ns1_r2_out,
+                                  barcode_length = 16,
+                                  chunk_size = 100000)
+     temp_ns2_r1 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.",
+                        temp_dir,
+                        "_GEX_",
+                        temp_s,
+                        "_",
+                        i_lane,
+                        "_R1_001.fastq.gz")
+    temp_ns2_r2 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq2.subset.",
+                          temp_dir,
+                          "_GEX_",
+                          temp_s,
+                          "_",
+                          i_lane,
+                          "_R2_001.fastq.gz")
+    temp_ns2_r1_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
+                        temp_obj[[4]],
+                        "_novaseq2.subset.",
+                        temp_dir,
+                        "_GEX_",
+                        temp_s,
+                        "_",
+                        i_lane,
+                        "_R1_001.fastq.gz")
+     temp_ns2_r2_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
+                        temp_obj[[4]],
+                        "_novaseq2.subset.",
+                        temp_dir,
+                        "_GEX_",
+                        temp_s,
+                        "_",
+                        i_lane,
+                        "_R2_001.fastq.gz")
+     subset_10x_fastq_by_barcodes(temp_ns2_r1,
+                                  temp_ns2_r2,
+                                  temp_barcodes,
+                                  temp_ns2_r1_out,
+                                  temp_ns2_r2_out,
+                                  barcode_length = 16,
+                                  chunk_size = 100000)
+     rm(temp_ns1_r1, temp_ns1_r2, temp_ns1_r1_out, temp_ns1_r2_out)
+  }
+  rm(temp_obj, temp_barcodes, temp_dir, temp_s)
+  
+}
+t_2074 <- 
+subset_10x_fastq_by_barcodes(
+  "/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz",
+  "/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq1.subset.jeff2_GEX_S4_L001_R2_001.fastq.gz",
+  T_2074_one,
+  "/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/T_2074_untreated_PBMC_novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz",
+  "/standard/CookLab/loughran_scrna/fastq/subset_reads/T_2074_untreated_PBMC_novaseq1.subset.jeff2_GEX_S4_L001_R2_001.fastq.gz",
+  barcode_length = 16,
+  chunk_size = 100000
+)
+```
