@@ -3,7 +3,7 @@ title: "decipher_loughran_scrna"
 output: html_document
 date: "2026-03-12"
 ---
-
+RUN CHUNK 1, 2, 10, 14, THEN LINE BY LINE 15 AS IT WRITES TO FILES
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
