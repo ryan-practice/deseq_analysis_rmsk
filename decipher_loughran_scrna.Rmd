@@ -256,74 +256,53 @@ check_10x_barcodes_in_fastq <- function(fastq_file, barcodes, barcode_length = 1
     missing_barcodes = names(found)[!found]
   )
 }
-T_2074_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_2074_untreated_PBMC"),])), "jeff2", "S4",
-                   "T_2074_untreated_PBMC")
-T_1666_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_1666_untreated_PBMC"),])), "jeff2", "S4",
-                   "T_1666_untreated_PBMC")
-T_1613_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "T_1613_untreated_PBMC"),])), "jeff2", "S4",
-                   "T_1613_untreated_PBMC")
-NL_0047_one <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$group == "NL_0047_untreated_PBMC"),])), "jeff2", "S4",
-                    "NL_0047_untreated_PBMC")
-
-T_1352_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "T_1352_untreated_PBMC"),])), "jeff3", "S5",
-                   "T_1352_untreated_PBMC")
-T_1406_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "T_1406_untreated_PBMC"),])), "jeff3", "S5",
-                   "T_1406_untreated_PBMC")
-T_1930_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "T_1930_untreated_PBMC"),])), "jeff3", "S5",
-                   "T_1930_untreated_PBMC")
-NL_2539_two <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$group == "NL_2539_untreated_PBMC"),])), "jeff3", "S5",
-                    "NL_2539_untreated_PBMC")
-
-T_1684_three <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "T_1684_untreated_PBMC"),])), "jeff4", "S6",
-                     "T_1684_untreated_PBMC")
-T_1875_three <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "T_1875_untreated_PBMC"),])), "jeff4", "S6",
-                     "T_1875_untreated_PBMC")
-T_1983_three <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "T_1983_untreated_PBMC"),])), "jeff4", "S6",
-                     "T_1983_untreated_PBMC")
-NL_2548_three<-list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$group == "NL_2548_untreated_PBMC"),])), "jeff4", "S6",
-                    "NL_2548_untreated_PBMC")
-
-NK_2012_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "NK_2012_untreated_PBMC"),])), "jeff5", "S15",
-                     "NK_2012_untreated_PBMC")
-NL_0049_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "NL_0049_untreated_PBMC"),])), "jeff5", "S15",
-                     "NL_0049_untreated_PBMC")
-T_1983_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "T_1983_untreated_SMC"),])), "jeff5", "S15",
-                    "T_1983_untreated_SMC")
-T_1406_four <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$group == "T_1406_relapsed_PBMC"),])), "jeff5", "S15",
-                    "T_1406_relapsed_PBMC")
-
-NK_2199_five <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$group == "NK_2199_untreated_PBMC"),])), "jeff6", "S16",
-                     "NK_2199_untreated_PBMC")
-NK_2112_five <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$group == "NK_2112_untreated_PBMC"),])), "jeff6", "S16",
-                     "NK_2112_untreated_PBMC")
-T_1406_five<-list(gsub("-5-xing5p","",row.names(meta_five[which(meta_five$group =="T_1406_cyclophosphamide_PBMC"),])), "jeff6", "S16",
-                  "T_1406_cyclophosphamide_PBMC")
-T_1983_five <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$group == "T_1983_relapsed_MAMC"),])), "jeff6", "S16",
-                    "T_1983_relapsed_MAMC")
-
-T_1825_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "T_1825_untreated_PBMC"),])), "jeff7", "S17",
-                   "T_1825_untreated_PBMC")
-T_1983_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "T_1983_relapsed_PBMC"),])), "jeff7", "S17",
-                   "T_1983_relapsed_PBMC")
-NK_1768_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "NK_1768_untreated_PBMC"),])), "jeff7", "S17",
-                    "NK_1768_untreated_PBMC")
-NK_1820_six <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$group == "NK_1820_untreated_PBMC"),])), "jeff7", "S17",
-                    "NK_1820_untreated_PBMC")
-
-NK_1791_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "NK_1791_untreated_PBMC"),])), "jeff8", "S18", "NK_1791_untreated_PBMC")
-T_1893_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "T_1893_untreated_PBMC"),])), "jeff8", "S18", "T_1893_untreated_PBMC")
-T_1983_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "T_1983_methotrexate_PBMC"),])), "jeff8", "S18", "T_1983_methotrexate_PBMC")
-T_1847_seven <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$group == "T_1847_untreated_PBMC" ),])), "jeff8", "S18","T_1847_untreated_PBMC")
+cancer_celltypes <- c("TLGLL", "NKLGLL")
+normal_celltypes <- setdiff(unique(loughran_seurat@meta.data$celltype), cancer_celltypes)
+jeff2_cancer_cell <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$celltype %in% cancer_celltypes),])), "jeff2", "S4",
+                   "cancer_celltypes")
+jeff2_normal_cell <- list(gsub("-1-xing5p", "", row.names(meta_one[which(meta_one$celltype %in% normal_celltypes),])), "jeff2", "S4",
+                   "normal_celltypes")
 
 
-jeff2_t_2074 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_2074_one[[1]], 16)
-jeff2_t_1666 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_1666_one[[1]], 16)
-jeff2_t_2074_ns2 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_2074_one[[1]], 16)
-jeff2_t_1666_ns2 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz", T_1666_one[[1]], 16)
+jeff3_cancer_cell <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$celltype %in% cancer_celltypes),])), "jeff3", "S5",
+                   "cancer_celltypes")
+jeff3_normal_cell <- list(gsub("-2-xing5p", "", row.names(meta_two[which(meta_two$celltype %in% normal_celltypes),])), "jeff3", "S5",
+                   "normal_celltypes")
 
-jeff3_t_1352 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff3_GEX_S5_L001_R1_001.fastq.gz", T_1352_two[[1]], 16)
 
-jeff4_t_1684 <- check_10x_barcodes_in_fastq("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff4_GEX_S6_L001_R1_001.fastq.gz", T_1684_three[[1]], 16)
+
+jeff4_cancer_cell <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$celltype %in% cancer_celltypes),])), "jeff4", "S6",
+                     "cancer_celltypes")
+jeff4_normal_cell <- list(gsub("-3-xing5p", "", row.names(meta_three[which(meta_three$celltype %in% normal_celltypes),])), "jeff4", "S6",
+                     "normal_celltypes")
+
+
+
+jeff5_cancer_cell <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$celltype %in% cancer_celltypes),])), "jeff5", "S15",
+                     "cancer_celltypes")
+jeff5_normal_cell <- list(gsub("-4-xing5p", "", row.names(meta_four[which(meta_four$celltype %in% normal_celltypes),])), "jeff5", "S15",
+                     "normal_celltypes")
+
+
+jeff6_cancer_cell <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$celltype %in% cancer_celltypes),])), "jeff6", "S16",
+                     "cancer_celltypes")
+jeff6_normal_cell <- list(gsub("-5-xing5p", "", row.names(meta_five[which(meta_five$celltype %in% normal_celltypes),])), "jeff6", "S16",
+                     "normal_celltypes")
+
+
+jeff7_cancer_cell <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$celltype %in% cancer_celltypes),])), "jeff7", "S17",
+                   "cancer_celltypes")
+jeff7_normal_cell <- list(gsub("-6-xing5p", "", row.names(meta_six[which(meta_six$celltype %in% normal_celltypes),])), "jeff7", "S17",
+                   "normal_celltypes")
+
+
+
+jeff8_cancer_cell <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$celltype %in% cancer_celltypes),])), "jeff8", "S18",
+                          "cancer_celltypes")
+jeff8_normal_cell <- list(gsub("-7-xing5p", "", row.names(meta_seven[which(meta_seven$celltype %in% normal_celltypes),])), "jeff8", "S18",
+                          "normal_celltypes")
+
+
 ```
 
 ```{r}
@@ -415,106 +394,145 @@ subset_10x_fastq_by_barcodes <- function(
 
 barcode_lists <- ls(envir = .GlobalEnv)[sapply(ls(envir = .GlobalEnv), function(x) inherits(get(x, envir = .GlobalEnv), "list"))]
 barcode_lists <- barcode_lists[-which(barcode_lists == "seur_obj_list")]
-if(length(barcode_lists) != 28){
+if(length(barcode_lists) != 14){
   stop()
 }
-for(i_barcode in barcode_lists){
-  temp_obj <- get(i_barcode)
-  temp_barcodes <- temp_obj[[1]]
-  temp_dir <- temp_obj[[2]]
-  temp_s <- temp_obj[[3]]
-  for(i_lane in c("L001", "L002", "L003", "L004")){
-    temp_ns1_r1 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.",
-                        temp_dir,
-                        "_GEX_",
-                        temp_s,
-                        "_",
-                        i_lane,
-                        "_R1_001.fastq.gz")
-    temp_ns1_r2 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq1.subset.",
-                          temp_dir,
-                          "_GEX_",
-                          temp_s,
-                          "_",
-                          i_lane,
-                          "_R2_001.fastq.gz")
-    temp_ns1_r1_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
-                        temp_obj[[4]],
-                        "_novaseq1.subset.",
-                        temp_dir,
-                        "_GEX_",
-                        temp_s,
-                        "_",
-                        i_lane,
-                        "_R1_001.fastq.gz")
-     temp_ns1_r2_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
-                        temp_obj[[4]],
-                        "_novaseq1.subset.",
-                        temp_dir,
-                        "_GEX_",
-                        temp_s,
-                        "_",
-                        i_lane,
-                        "_R2_001.fastq.gz")
-     subset_10x_fastq_by_barcodes(temp_ns1_r1,
-                                  temp_ns1_r2,
-                                  temp_barcodes,
-                                  temp_ns1_r1_out,
-                                  temp_ns1_r2_out,
-                                  barcode_length = 16,
-                                  chunk_size = 100000)
-     temp_ns2_r1 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.",
-                        temp_dir,
-                        "_GEX_",
-                        temp_s,
-                        "_",
-                        i_lane,
-                        "_R1_001.fastq.gz")
-    temp_ns2_r2 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq2.subset.",
-                          temp_dir,
-                          "_GEX_",
-                          temp_s,
-                          "_",
-                          i_lane,
-                          "_R2_001.fastq.gz")
-    temp_ns2_r1_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
-                        temp_obj[[4]],
-                        "_novaseq2.subset.",
-                        temp_dir,
-                        "_GEX_",
-                        temp_s,
-                        "_",
-                        i_lane,
-                        "_R1_001.fastq.gz")
-     temp_ns2_r2_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex/",
-                        temp_obj[[4]],
-                        "_novaseq2.subset.",
-                        temp_dir,
-                        "_GEX_",
-                        temp_s,
-                        "_",
-                        i_lane,
-                        "_R2_001.fastq.gz")
-     subset_10x_fastq_by_barcodes(temp_ns2_r1,
-                                  temp_ns2_r2,
-                                  temp_barcodes,
-                                  temp_ns2_r1_out,
-                                  temp_ns2_r2_out,
-                                  barcode_length = 16,
-                                  chunk_size = 100000)
-     rm(temp_ns1_r1, temp_ns1_r2, temp_ns1_r1_out, temp_ns1_r2_out)
+
+log_file <- "/standard/CookLab/loughran_scrna/uncompressed_fastq/test_demultiplex.log"
+zz <- file(log_file, open = "wt")
+sink(zz, split = TRUE)
+sink(zz, type = "message")
+#first dir is home directory for some reason
+#testing on just _1_750000 and _750001_whatever. When ready, fix the for loop initiation
+# for(i_dir in list.dirs("/standard/CookLab/loughran_scrna/uncompressed_fastq/")[2:length(list.dirs("/standard/CookLab/loughran_scrna/uncompressed_fastq/"))]){
+for(i_dir in list.dirs("/standard/CookLab/loughran_scrna/uncompressed_fastq/")[2:length(list.dirs("/standard/CookLab/loughran_scrna/uncompressed_fastq/"))][1:2]){
+  print(paste0("Starting ", i_dir, " ", Sys.time()))
+  for(i_file in list.files(i_dir, pattern = ".*R2.*fastq.gz$", full.names = TRUE)){
+    print(paste0("Starting ", i_file, " ", Sys.time()))
+    temp_r2 <- i_file
+    temp_r1 <- gsub("_R2_", "_R1_", temp_r2)
+    for(i_barcode in barcode_lists[grep(substr(basename(temp_r1), 1, 5), barcode_lists)]){
+      temp_barcodes <- get(i_barcode)[[1]]
+      if(grepl("cancer", i_barcode)){
+        i_celltype <- "cancer"
+      }
+      if(grepl("normal", i_barcode)){
+        i_celltype <- "normal"
+      }
+      temp_r1_out <- gsub("fastq.gz", paste0(i_celltype,".out.fastq.gz.celltype.demultiplex"), temp_r1)
+      temp_r2_out <- gsub("fastq.gz", paste0(i_celltype,".out.fastq.gz.celltype.demultiplex"), temp_r2)
+      subset_10x_fastq_by_barcodes(temp_r1,
+                                    temp_r2,
+                                    temp_barcodes,
+                                    temp_r1_out,
+                                    temp_r2_out,
+                                    barcode_length = 16,
+                                    chunk_size = 100000)
+    }
   }
-  rm(temp_obj, temp_barcodes, temp_dir, temp_s)
-  
+  print(paste0("Finished ", i_dir, " ", Sys.time()))
 }
-t_2074 <- 
-subset_10x_fastq_by_barcodes(
-  "/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz",
-  "/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq1.subset.jeff2_GEX_S4_L001_R2_001.fastq.gz",
-  T_2074_one,
-  "/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/T_2074_untreated_PBMC_novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz",
-  "/standard/CookLab/loughran_scrna/fastq/subset_reads/T_2074_untreated_PBMC_novaseq1.subset.jeff2_GEX_S4_L001_R2_001.fastq.gz",
-  barcode_length = 16,
-  chunk_size = 100000
-)
+sink(type = "message")
+sink()
+close(zz)
+
+# for(i_barcode in barcode_lists){
+#   temp_obj <- get(i_barcode)
+#   temp_barcodes <- temp_obj[[1]]
+#   temp_dir <- temp_obj[[2]]
+#   temp_s <- temp_obj[[3]]
+#   for(i_lane in c("L001", "L002", "L003", "L004")){
+#     temp_ns1_r1 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.",
+#                         temp_dir,
+#                         "_GEX_",
+#                         temp_s,
+#                         "_",
+#                         i_lane,
+#                         "_R1_001.fastq.gz")
+#     temp_ns1_r2 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq1.subset.",
+#                           temp_dir,
+#                           "_GEX_",
+#                           temp_s,
+#                           "_",
+#                           i_lane,
+#                           "_R2_001.fastq.gz")
+#     temp_ns1_r1_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex_celltype/",
+#                         temp_obj[[4]],
+#                         "_novaseq1.subset.",
+#                         temp_dir,
+#                         "_GEX_",
+#                         temp_s,
+#                         "_",
+#                         i_lane,
+#                         "_R1_001.fastq.gz")
+#      temp_ns1_r2_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex_celltype/",
+#                         temp_obj[[4]],
+#                         "_novaseq1.subset.",
+#                         temp_dir,
+#                         "_GEX_",
+#                         temp_s,
+#                         "_",
+#                         i_lane,
+#                         "_R2_001.fastq.gz")
+#      subset_10x_fastq_by_barcodes(temp_ns1_r1,
+#                                   temp_ns1_r2,
+#                                   temp_barcodes,
+#                                   temp_ns1_r1_out,
+#                                   temp_ns1_r2_out,
+#                                   barcode_length = 16,
+#                                   chunk_size = 100000)
+#      temp_ns2_r1 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq2.subset.",
+#                         temp_dir,
+#                         "_GEX_",
+#                         temp_s,
+#                         "_",
+#                         i_lane,
+#                         "_R1_001.fastq.gz")
+#     temp_ns2_r2 <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq2.subset.",
+#                           temp_dir,
+#                           "_GEX_",
+#                           temp_s,
+#                           "_",
+#                           i_lane,
+#                           "_R2_001.fastq.gz")
+#     temp_ns2_r1_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex_celltype/",
+#                         temp_obj[[4]],
+#                         "_novaseq2.subset.",
+#                         temp_dir,
+#                         "_GEX_",
+#                         temp_s,
+#                         "_",
+#                         i_lane,
+#                         "_R1_001.fastq.gz")
+#      temp_ns2_r2_out <- paste0("/standard/CookLab/loughran_scrna/fastq/subset_reads_custom_demultiplex_celltype/",
+#                         temp_obj[[4]],
+#                         "_novaseq2.subset.",
+#                         temp_dir,
+#                         "_GEX_",
+#                         temp_s,
+#                         "_",
+#                         i_lane,
+#                         "_R2_001.fastq.gz")
+#      subset_10x_fastq_by_barcodes(temp_ns2_r1,
+#                                   temp_ns2_r2,
+#                                   temp_barcodes,
+#                                   temp_ns2_r1_out,
+#                                   temp_ns2_r2_out,
+#                                   barcode_length = 16,
+#                                   chunk_size = 100000)
+#      rm(temp_ns1_r1, temp_ns1_r2, temp_ns1_r1_out, temp_ns1_r2_out)
+#   }
+#   rm(temp_obj, temp_barcodes, temp_dir, temp_s)
+#   
+# }
+# t_2074 <- 
+# subset_10x_fastq_by_barcodes(
+#   "/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz",
+#   "/standard/CookLab/loughran_scrna/fastq/subset_reads/novaseq1.subset.jeff2_GEX_S4_L001_R2_001.fastq.gz",
+#   T_2074_one,
+#   "/standard/CookLab/loughran_scrna/fastq/subset_reads_R1/T_2074_untreated_PBMC_novaseq1.subset.jeff2_GEX_S4_L001_R1_001.fastq.gz",
+#   "/standard/CookLab/loughran_scrna/fastq/subset_reads/T_2074_untreated_PBMC_novaseq1.subset.jeff2_GEX_S4_L001_R2_001.fastq.gz",
+#   barcode_length = 16,
+#   chunk_size = 100000
+# )
 ```
